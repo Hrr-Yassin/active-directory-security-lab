@@ -1,0 +1,6 @@
+<network>
+  <name>ad-identity-lab</name>
+  <bridge name="virbr-idlab" stp="on" delay="0"/>
+  <dns enable="no"/>
+  <ip address="192.168.221.1" netmask="255.255.255.0"/>
+</network>
