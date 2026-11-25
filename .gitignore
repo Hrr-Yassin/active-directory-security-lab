@@ -11,3 +11,12 @@
 *.qcow2
 /restricted/
 /local-results/
+/.local-lab/
+/artifacts/
+*.iso
+*.vhd*
+*.pfx
+*.p12
+*.ppm
+*.vfd
+*.bundle

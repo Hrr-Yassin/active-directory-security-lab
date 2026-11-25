@@ -1,0 +1,16 @@
+Observed host setup
+
+Source: local libvirt network and VM XML, snapshot inventory, guest state, and a libvirt console capture.
+Hardware context: Fedora 45, eight logical CPU threads, 31 GiB RAM.
+Network: ad-identity-lab
+Bridge: virbr-idlab at 192.168.221.1 netmask 255.255.255.0
+Forwarding: no forward element
+Host DHCP: no DHCP element
+Host DNS: disabled in network XML
+Workstation NIC: network before, ad-identity-lab after
+Workstation MAC: unchanged
+Workstation disk: win11-idlab-overlay.qcow2 with original win11-1.qcow2 as backing disk
+Libvirt snapshot metadata: idlab-before
+Workstation state at XML capture: running
+Workstation screenshot UTC: 2026-11-25T16:55:55+00:00
+Workstation screenshot SHA-256: 8a0c8dfacf819c51121bf827cf3d96eaa3bd8b8c061559bab8041b0870bf77d7

@@ -1,70 +1,44 @@
-![Active Directory Security Lab — Design Phase — Educational Project](assets/banner.svg)
+# Enterprise Active Directory Security Lab
 
-# Active Directory Security Lab
+This project builds a Windows domain on Fedora KVM/libvirt to demonstrate identity administration, role-based access, Group Policy and defensive security verification. It uses a dedicated host-only network, fictional users in Finance and Operations, and a planned Windows 11 domain member.
 
-**Design Phase — Educational Project**
+**Current status**
 
-Design a small Windows domain and use repeatable configuration evidence to compare identity exposure before and after a hardening program.
+`LAB-DC01` runs `corp.example.test` on the isolated libvirt network. Native checks verified AD DS, DNS, Kerberos, SYSVOL, NETLOGON and certificate-validated LDAPS. Both department users passed the signed SMB access checks, and the helpdesk reset succeeded only within its assigned scope. Five of eight fully measured controls improved, taking the paired total from three to eight passes. The approved workstation still runs Windows 11 Home. Its domain join and endpoint measurements require the owner's Pro upgrade. [Paired assessment](evidence/assessment.md) · [Screenshots and verification](evidence/README.md)
 
-## Why this project
+## Architecture
 
-Directory objects, delegated permissions and workstation privileges form a trust graph. An isolated lab can expose where approved roles and effective permissions differ.
+| Component | Pilot scope |
+| --- | --- |
+| Fedora host | KVM/QEMU, system libvirt and a dedicated bridge with no forwarding |
+| Directory | Windows Server 2022 Evaluation, AD DS and DNS for `corp.example.test` |
+| Workstation | Approved Windows 11 guest on the isolated bridge, with domain membership and DC DNS configured after the Pro upgrade |
+| Identities | Fictional department users, dedicated directory and helpdesk roles, bounded service identity and departmental resource groups |
+| Security validation | 16 defined controls, native state collection, positive and denied authorization checks, and paired sanitized reporting |
 
-- Explain how DNS, Kerberos, LDAP and group scopes support domain operations.
-- Model and review delegated privileges with reproducible before/after evidence.
-- Validate a least-privilege baseline while preserving ordinary sign-in and recovery.
+The [network and identity architecture](docs/architecture.md) shows the trust boundaries, OUs and access groups. The [authentication flow](docs/technical-design.md) traces DNS, Kerberos, LDAP and SMB.
 
-## Proposed system
+## Reproduce and verify
 
-```mermaid
-flowchart LR
-    N0["Windows client"]
-    N1["AD DS + DNS"]
-    N2["Member service"]
-    N3["Admin workstation"]
-    N4["Audit and recovery"]
-    N0 -->|"DNS and Kerberos"| N1
-    N0 -->|"service ticket"| N2
-    N3 -->|"delegated management"| N1
-    N1 -->|"logs and system state"| N4
-```
+1. Check the [resource and licensing requirements](docs/lab-requirements.md) and follow the [deployment runbook](docs/deployment.md).
+2. Provision AD DS, DNS, the fictional identity tree and two scoped SMB shares. Capture the DC baseline and verify the approved client’s secure channel when its edition supports the join.
+3. Review the [control matrix](docs/controls.md) and apply hardening in stages. Verify effective settings, compatibility and authorized access.
+4. Generate the [before-and-after assessment](docs/assessment.md) from paired native measurements and retain relevant [screenshots and evidence](evidence/README.md).
 
-Use an isolated corp.example.test forest, two domain controllers on an identity segment, one member server and a Windows 11 client on a member segment. Add a dedicated management workstation and restricted backup/log repository. Domain controllers handle protected directory, DNS and time services. Route only needed domain traffic across segments. Separate privileged administration from normal member access, restrict backups to recovery custodians, and perform system-state restore in a disconnected clone.
+| Entry point | Purpose |
+| --- | --- |
+| `host/Inspect-LabHost.sh` | Read host capacity, routes and libvirt inventory |
+| `powershell/Install-LabDomain.ps1`, `Join-LabWorkstation.ps1` | Create the lab forest and join the approved workstation |
+| `powershell/Initialize-LabDirectory.ps1`, `Initialize-LabShares.ps1` | Create fictional identities, OUs, groups and resource ACLs |
+| `powershell/Set-LabHardening.ps1`, `Set-LabAuditPolicy.ps1` | Stage and apply security settings |
+| `powershell/Get-LabHealth.ps1`, `Test-LabIdentity.ps1`, `Test-LabDelegation.ps1` | Exercise DNS, the secure channel, authentication and permission boundaries |
+| `powershell/Get-LabAssessment.ps1`, `New-LabAssessmentReport.ps1` | Capture before/after state and generate a sanitized evidence report |
 
-**Design trade-off.** Use a single forest to focus on authorization and recovery; inter-forest delegation and cloud federation are future work. Pair BloodHound relationship analysis with PowerShell exported ACLs and membership because collection scope can hide edges. Observe NTLM usage before enforcement to avoid breaking legitimate legacy services.
+Mutation scripts require explicit application and an exact lab scope. Read-only captures and public summaries omit credentials. Windows setup and activation use legitimate media and supported procedures.
 
-## Engineering stack
+## Portfolio material
 
-Windows Server hosts AD DS and AD-integrated DNS; Windows 11 represents domain clients. Group Policy makes configuration centrally reviewable. PowerShell inventory and Windows event logs provide reproducible baselines. BloodHound is optional for analyzing authorized, read-only relationship datasets with fake identities. Microsoft security baselines provide a reviewed starting point that still needs compatibility testing.
-
-## Trust and technical challenges
-
-- **Excess delegation** across helpdesk to directory. Scoped OU ACLs and periodic group review.
-- **Privileged session exposure** across admin to member networks. Dedicated admin workstation and separate admin identity.
-- **Legacy auth weakness** across client to services. NTLM audit, staged exceptions, Kerberos verification.
-- **Directory outage or unsafe restore** across directory to backups. Separate backup access and isolated restore.
-
-## Lab and acceptance
-
-Estimate 8 logical cores, 24–32 GB RAM and 200 GB SSD for two DCs, one server, a client and an on-demand admin workstation. Use valid Windows evaluation terms, private virtual switching, internal name resolution and clean snapshots.
-
-Capture DNS health, time skew, privileged group membership, delegated ACLs, service account properties, effective GPO, log availability, NTLM use and backup age before change. Re-run using the same scope and config revisions after pilot hardening. Require normal sign-in, service ticket issuance, least-privilege helpdesk, audited group changes and protected account denial. Record signed exceptions for each legacy dependency with expiry. Future recovery trial must restore a disconnected clone, validate DNS and obtain a ticket for a fictional test account before timing the recovery.
-
-## Delivery and professional skills
-
-Directory hierarchy, OU/GPO and delegation matrix, identity lifecycle records, before/after review packet, logging guide and isolated recovery evidence.
-
-Windows identity engineering, access review, policy rollout, infrastructure hardening and backup validation.
-
-Phase 0 design is documented. The [roadmap](ROADMAP.md) tracks four future stages, from a minimal prototype through validation and evidence publication.
-
-## Scope and ethics
-
-Use test identities, approved Windows images and a private forest. Treat backups and relationship exports as sensitive. Review directory changes as leased lab tasks.
-
-## Design references and navigation
-
-- [Architecture](docs/architecture.md) · [Technical design](docs/technical-design.md) · [Threat model](docs/threat-model.md)
-- [Learning objectives](docs/learning-objectives.md) · [Testing strategy](docs/testing-strategy.md) · [Lab requirements](docs/lab-requirements.md)
-- [Official references](docs/references.md) · [Evidence template](templates/baseline-review.md) · [Security](SECURITY.md)
-- [Back to the portfolio](https://github.com/Hrr-Yassin)
+- [Goals](GOALS.md), [execution plan](PLANS.md), and [status](PROGRESS.md)
+- [Architecture decisions](docs/decisions/0001-single-dc-pilot.md), [network isolation](docs/decisions/0002-host-only-network.md), and [assessment method](docs/decisions/0003-native-measurement.md)
+- [Threat model](docs/threat-model.md), [identity security practices](docs/identity-security.md), and [interview guide and CV bullets in English and French](docs/interview.md)
+- [Five-minute demonstration](docs/interview.md#five-minute-demonstration)

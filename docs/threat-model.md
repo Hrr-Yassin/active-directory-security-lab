@@ -1,20 +1,14 @@
 # Threat model
 
-## Scope and assumptions
+| Exposure | Boundary | Treatment and verification |
+| --- | --- | --- |
+| Compromise of a domain administrator session | Directory management and workstation | Use a designated administrator at the DC console. Review direct and transitive privilege separately |
+| Dormant identities and unmanaged service credentials | Directory lifecycle | Review age indicators and exceptions. Stage an AES-enabled gMSA with narrowly scoped retrieval |
+| Repeated password guessing | Domain sign-in | Apply a length and history baseline, a limited lockout window and sign-in auditing. Review availability impact of lockouts |
+| Unsigned protocols or incompatible clients | Active Directory and SMB | Pilot client signing and observe usage. Require LDAP and SMB signing and test legitimate domain traffic |
+| Cross-department access | Authorization groups and share/NTFS ACLs | Use scoped role groups and apply both ACLs. Test cross-department Access Denied from each ordinary user |
+| Over-broad password reset | Helpdesk delegation | Scope one ACE to People user objects. Prove allowed and denied cases with disabled fixtures |
+| Spread to another network | Fedora bridge and guest routes | Dedicated host-only network with no guest default route. Observe libvirt and Windows network configuration |
+| Loss of service or evidence | Single DC and local datastore | Protect the rollback assets and grow into supported system-state recovery and separate log storage |
 
-Use test identities, approved Windows images and a private forest. Treat backups and relationship exports as sensitive. Review directory changes as leased lab tasks.
-
-Use the proposed [component graph](architecture.md) as the system boundary. Assumptions and control efficacy are subject to laboratory verification.
-
-| Threat | Trust boundary | Proposed control | Future verification |
-| --- | --- | --- | --- |
-| Excess delegation | Helpdesk to directory | Scoped OU ACLs and periodic group review | Reset allowed for pilot users and denied for privileged accounts |
-| Privileged session exposure | Admin to member networks | Dedicated admin workstation and separate admin identity | Privileged interactive sign-in to pilot client is denied |
-| Legacy auth weakness | Client to services | NTLM audit, staged exceptions, Kerberos verification | Document dependency and verify exception expiry |
-| Directory outage or unsafe restore | Directory to backups | Separate backup access and isolated restore | Recover identity and DNS in clone and confirm timestamps |
-
-## Residual risk and review triggers
-
-Use a single forest to focus on authorization and recovery; inter-forest delegation and cloud federation are future work. Pair BloodHound relationship analysis with PowerShell exported ACLs and membership because collection scope can hide edges. Observe NTLM usage before enforcement to avoid breaking legitimate legacy services.
-
-Revisit the model whenever the topology, identities, dataset, or deployment context changes.
+Fedora and its hypervisor administrators can access guest state. Treat guest disks, domain backups, activation details and raw evidence as private. The single-server pilot cannot demonstrate DC redundancy, resilient off-host logging or production administrative tiering.

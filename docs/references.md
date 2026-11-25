@@ -1,6 +1,17 @@
-# References
+# Primary references
 
-- [Microsoft AD DS overview](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/get-started/virtual-dc/active-directory-domain-services-overview)
-- [Microsoft security baselines](https://learn.microsoft.com/en-us/windows/security/operating-system-security/device-management/windows-security-configuration-framework/windows-security-baselines)
+- [Microsoft Windows Server 2022 Evaluation Center](https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2022)
+- [Microsoft Windows Server hardware requirements](https://learn.microsoft.com/en-us/windows-server/get-started/hardware-requirements)
+- [Microsoft AD DS forest deployment cmdlet](https://learn.microsoft.com/en-us/powershell/module/addsdeployment/install-addsforest?view=windowsserver2022-ps)
 - [Microsoft Kerberos authentication overview](https://learn.microsoft.com/en-us/windows-server/security/kerberos/kerberos-authentication-overview)
-- [BloodHound documentation](https://bloodhound.specterops.io/)
+- [Microsoft LDAP signing policy](https://learn.microsoft.com/en-us/windows-server/identity/manage-ldap-signing-group-policy)
+- [Microsoft LDAPS certificate requirements](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/configure-ldap-signing-certificates)
+- [Microsoft SMB signing](https://learn.microsoft.com/en-us/windows-server/storage/file-server/smb-signing)
+- [Microsoft LAN Manager authentication level](https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/network-security-lan-manager-authentication-level)
+- [Microsoft Windows Firewall PowerShell guide](https://learn.microsoft.com/en-us/windows/security/operating-system-security/network-security/windows-firewall/configure-with-command-line)
+- [Microsoft group Managed Service Accounts](https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/group-managed-service-accounts/group-managed-service-accounts/manage-group-managed-service-accounts)
+- [Microsoft Windows LAPS for AD DS](https://learn.microsoft.com/en-us/windows-server/identity/laps/laps-scenarios-windows-server-active-directory)
+- [Microsoft Windows LAPS event logs](https://learn.microsoft.com/en-us/windows-server/identity/laps/laps-management-event-log)
+- [Microsoft advanced audit policy command](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/auditpol-get)
+- [Microsoft Windows security baselines](https://learn.microsoft.com/en-us/windows/security/operating-system-security/device-management/windows-security-configuration-framework/windows-security-baselines)
+- [Libvirt virtual network XML](https://libvirt.org/formatnetwork.html)

@@ -1,33 +1,57 @@
-# Architecture
+# Network and identity architecture
 
-**Proposed topology**
+The pilot uses one AD DS forest and one domain. Windows Server hosts the directory, DNS and two departmental file shares. The isolated Windows 11 VM is running Home and awaits the owner’s Pro upgrade before it can join. Fedora runs both guests and is the only upstream administration boundary.
 
-Use an isolated corp.example.test forest, two domain controllers on an identity segment, one member server and a Windows 11 client on a member segment. Add a dedicated management workstation and restricted backup/log repository. Domain controllers handle protected directory, DNS and time services. Route only needed domain traffic across segments. Separate privileged administration from normal member access, restrict backups to recovery custodians, and perform system-state restore in a disconnected clone.
-
-![Proposed component boundaries and directed data relationships](../assets/architecture.svg)
-
-```mermaid
+~~~mermaid
 flowchart LR
-    N0["Windows client"]
-    N1["AD DS + DNS"]
-    N2["Member service"]
-    N3["Admin workstation"]
-    N4["Audit and recovery"]
-    N0 -->|"DNS and Kerberos"| N1
-    N0 -->|"service ticket"| N2
-    N3 -->|"delegated management"| N1
-    N1 -->|"logs and system state"| N4
-```
+    LAN["Host LAN and other virtual networks"]
+    HOST["Fedora KVM and libvirt<br/>Console and evidence collection"]
+    LAN --- HOST
+    subgraph I["ad-identity-lab · 192.168.221.0/24 · no guest routing"]
+        B["virbr-idlab<br/>192.168.221.1"]
+        DC["LAB-DC01 · 192.168.221.10<br/>AD DS, DNS, KDC, SYSVOL, SMB"]
+        WS["win11 · Windows 11 Home<br/>Target LAB-WS01 · 192.168.221.20"]
+        B --- DC
+        B --- WS
+        WS -.->|"After the Pro upgrade and domain join"| DC
+    end
+    HOST --- B
+~~~
 
-| Source | Destination | Interface or record |
-| --- | --- | --- |
-| Windows client | AD DS + DNS | DNS and Kerberos |
-| Windows client | Member service | service ticket |
-| Admin workstation | AD DS + DNS | delegated management |
-| AD DS + DNS | Audit and recovery | logs and system state |
+| Boundary | Configuration |
+| --- | --- |
+| Namespace | `corp.example.test` with NetBIOS name `IDLAB` |
+| Network | Isolated libvirt bridge with static IPv4 addresses, no default route and no external guest DNS service |
+| Domain controller | `LAB-DC01` with server address `192.168.221.10`, Server 2022 Standard Evaluation with Desktop Experience and Windows Server 2016 functional levels |
+| Planned domain member | `LAB-WS01` with address `192.168.221.20`, Windows 11 Pro and the DC as its DNS resolver |
+| GPO scope | DC policy linked to `OU=Domain Controllers`. Endpoint policy linked to `OU=Workstations,OU=IdentityLab` |
+| Management | VM console for new forest and Tier 0 operations. Local administrator for workstation configuration. Helpdesk uses an independent account |
 
-## Decision and limitation
+## Organizational units and authorization
 
-Use a single forest to focus on authorization and recovery; inter-forest delegation and cloud federation are future work. Pair BloodHound relationship analysis with PowerShell exported ACLs and membership because collection scope can hide edges. Observe NTLM usage before enforcement to avoid breaking legitimate legacy services.
+~~~mermaid
+flowchart TD
+    D["corp.example.test"] --> DC["Domain Controllers"]
+    D --> R["IdentityLab"]
+    R --> P["People"]
+    R --> O["Operators"]
+    R --> G["Groups"]
+    R --> S["Service Accounts"]
+    R --> W["Workstations"]
+    P --> F["Finance"]
+    P --> M["Operations"]
+    O --> HD["Helpdesk operator"]
+    HD -->|"Reset Password on descendant user objects"| P
+    O --> A["Dedicated directory administrator"]
+    W --> WK["LAB-WS01"]
+~~~
 
-See [security boundaries](threat-model.md) and [deployment assumptions](lab-requirements.md).
+| Role | Expected access |
+| --- | --- |
+| Finance and Operations employees | Normal domain sign-in. The employee’s global role group is nested into a domain-local group. That group grants Change on its SMB share and Modify on its NTFS folder |
+| Helpdesk | A separate operator identity and a single inherited Password Reset right under People. No directory administration or department share entitlement |
+| Directory operations | Dedicated `casey.t0` identity and the protected built-in Administrator retained for recovery. Use the DC console |
+| Workstation maintenance | Console with the authorized local administrator. Encrypted Windows LAPS is scoped to Workstations when supported |
+| Service identity | Outbound-only gMSA, AES and an empty set of eligible hosts while no workload is assigned |
+
+Relevant Windows traffic includes DNS 53, Kerberos 88 and 464, LDAP 389, LDAPS 636, SMB 445, NTP 123, RPC endpoint mapping 135 and applicable dynamic RPC ports. The DC uses the lab-issued certificate for LDAPS. A hostname-validated TLS 1.3 connection and a native Kerberos LDAPS bind passed after the firewall changes. See the [authentication flow](technical-design.md) and [hardening matrix](controls.md).
