@@ -1,14 +1,14 @@
 # Enterprise Active Directory Security Lab
 
-**An isolated Windows Server lab for identity administration, least-privilege access, and Group Policy hardening.** The lab runs on Fedora with KVM/libvirt and uses fictional Finance and Operations departments to test access boundaries.
+**An isolated Windows Server lab that tests least-privilege access and Group Policy hardening using fictional Finance and Operations departments.**
 
-[Architecture](#architecture) · [Hardening results](#hardening-results) · [Reproduce and verify](#reproduce-and-verify) · [Evidence index](evidence/README.md)
+[Verified results](#verified-results) · [Architecture](#architecture) · [Reproduce and verify](#reproduce-and-verify) · [Evidence index](evidence/README.md)
 
 [![Windows PowerShell on LAB-DC01 showing a successful certificate-validated Kerberos LDAPS bind, the applied DC Group Policy, and effective audit settings](evidence/screenshots/dc-policy-and-protocols.png)](evidence/screenshots/dc-policy-and-protocols.png)
 
 *Live domain controller capture showing validated LDAPS, the applied security policy, and effective audit settings. Click the image to view it at full resolution.*
 
-## Hardening results
+## Verified results
 
 | Phase | Passing controls among the 8 measured in both phases |
 | --- | --- |
@@ -17,9 +17,7 @@
 
 Five controls improved and zero regressed. The assessment defines 16 controls, of which eight remained unmeasured in the paired comparison. The Windows 11 Home guest is on the isolated network. Domain join and endpoint validation are pending a Windows 11 Pro upgrade. [Paired assessment](evidence/assessment.md)
 
-[![PowerShell assessment console showing the paired before and after totals for the eight measured controls](evidence/screenshots/dc-assessment.png)](evidence/screenshots/dc-assessment.png)
-
-*Live assessment output showing the before-and-after totals. The paired report records each control and its measurement status.*
+[Live assessment console capture](evidence/screenshots/dc-assessment.png)
 
 ## What the lab demonstrates
 
